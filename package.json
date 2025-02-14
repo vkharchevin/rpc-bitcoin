@@ -1,6 +1,6 @@
 {
   "name": "rpc-bitcoin",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "A TypeScript library to make RPC and HTTP REST requests to Bitcoin Core",
   "main": "lib/index.js",
   "type": "commonjs",

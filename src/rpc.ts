@@ -89,7 +89,7 @@ export type SetBanParams = {
   absolute?: boolean;
 };
 
-export type AddressType = "legacy" | "p2sh-segwit" | "bech32";
+export type AddressType = "legacy" | "p2sh-segwit" | "bech32" | "bech32m";
 
 export type CreateMultiSigParams = {
   nrequired: number;
