@@ -227,6 +227,8 @@ export type CreateWalletParams = {
   wallet_name: string;
   disable_private_keys?: boolean;
   blank?: boolean;
+  descriptors: boolean;
+  load_on_startup: boolean;
 };
 
 export type GetBalanceParams = {
@@ -1222,8 +1224,8 @@ export class RPCClient extends RESTClient {
   /**
    * @description Loads a wallet from a wallet file or directory.
    */
-  loadwallet({ filename }: { filename: string }) {
-    return this.rpc("loadwallet", { filename });
+   loadwallet(name: string, load_on_startup: boolean = false) {
+    return this.rpc("loadwallet", [name, load_on_startup]);
   }
 
   /**
@@ -1313,7 +1315,7 @@ export class RPCClient extends RESTClient {
   /**
    * @description Unloads the wallet.
    */
-  unloadwallet({ wallet_name }: { wallet_name?: string } = {}) {
+  unloadwallet(wallet_name: string) {
     if (typeof wallet_name !== "undefined") {
       return this.rpc("unloadwallet", { wallet_name });
     }
