@@ -399,22 +399,29 @@ export class RPCClient extends RESTClient {
     fullResponse,
     ...options
   }: RPCIniOptions) {
-    super({ ...options, auth: { user, pass }, uri: "/" });
+    if (user && pass) {
+      options.options = {
+        Authorization:
+          "Basic " + Buffer.from(user + ":" + pass).toString("base64"),
+      };
+    }
+    super({ ...options });
+
     this.fullResponse = fullResponse ? true : false;
     this.wallet = typeof wallet === "string" ? wallet : undefined;
   }
 
   batch(body: JSONRPC | JSONRPC[], uri = "/") {
-    return super.post({ body, uri });
+    return super.post({ body: JSON.stringify(body), uri });
   }
 
   async rpc(method: string, params = {}, wallet?: string) {
     const uri = typeof wallet === "undefined" ? "/" : "wallet/" + wallet;
-    const body = { method, params, jsonrpc: 1.0, id: "rpc-bitcoin" };
+    const body = { method, params, jsonrpc: "1.0", id: "rpc-bitcoin" };
     try {
       const response = await this.batch(body, uri);
       return this.fullResponse ? response : response.result;
-    } catch (error) {
+    } catch (error: any) {
       if (error.error && error.error.error && error.error.result === null) {
         throw this.fullResponse ? error.error : error.error.error;
       }
@@ -1053,7 +1060,7 @@ export class RPCClient extends RESTClient {
    */
   getrawchangeaddress(
     options: { address_type?: AddressType },
-    wallet?: string
+    wallet?: string,
   ) {
     return this.rpc("getrawchangeaddress", options, wallet || this.wallet);
   }
@@ -1294,12 +1301,12 @@ export class RPCClient extends RESTClient {
    */
   signrawtransactionwithwallet(
     options: SignRawTransactionWithWalletParams,
-    wallet?: string
+    wallet?: string,
   ) {
     return this.rpc(
       "signrawtransactionwithwallet",
       options,
-      wallet || this.wallet
+      wallet || this.wallet,
     );
   }
 
@@ -1318,7 +1325,7 @@ export class RPCClient extends RESTClient {
    */
   walletcreatefundedpsbt(
     options: WalletCreateFundedPsbtParams,
-    wallet?: string
+    wallet?: string,
   ) {
     return this.rpc("walletcreatefundedpsbt", options, wallet || this.wallet);
   }
@@ -1342,7 +1349,7 @@ export class RPCClient extends RESTClient {
    */
   walletpassphrasechange(
     options: WalletPassphraseChangeParams,
-    wallet?: string
+    wallet?: string,
   ) {
     return this.rpc("walletpassphrasechange", options, wallet || this.wallet);
   }

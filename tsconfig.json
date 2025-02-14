@@ -15,5 +15,6 @@
     "removeComments": true,
     "forceConsistentCasingInFileNames": true
   },
+    "type": "module",
   "exclude": ["test"]
 }

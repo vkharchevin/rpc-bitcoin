@@ -1,4 +1,4 @@
-import { RPC, RPCOptions } from "rpc-request";
+const fetch = require("node-fetch");
 
 export type formatParam = { format?: "json" | "hex" | "bin" };
 
@@ -17,9 +17,18 @@ export type HeaderParams = BlockParams & { count?: number };
 
 export type TxParams = formatParam & { txid: string };
 
-export type RESTIniOptions = RPCOptions & { url?: string };
+export type RESTIniOptions = {
+  host?: string;
+  port?: number;
+  timeout?: number;
+  options?: HeadersInit;
+};
 
-export class RESTClient extends RPC {
+export class RESTClient {
+  private baseUrl: string = "";
+  private timeout: number = 0;
+  private options?: HeadersInit = undefined;
+
   /**
    * @param {object} [params]
    * @param {string} [params.url='http://localhost']
@@ -28,12 +37,45 @@ export class RESTClient extends RPC {
    * @param {...*} [params.options]
    */
   constructor({
-    url = "http://localhost",
+    host = "http://localhost",
     port = 8332,
     timeout = 30000,
-    ...options
+    options,
   }: RESTIniOptions = {}) {
-    super({ ...options, baseUrl: `${url}:${port}`, timeout, json: true });
+    this.baseUrl = `${host}:${port}`;
+    this.timeout = timeout;
+    this.options = options;
+  }
+
+  async get({ uri }: { uri: string }) {
+    const url = new URL(uri, this.baseUrl);
+    return fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        ...this.options,
+      },
+      signal: AbortSignal.timeout(this.timeout),
+    }).then((res: Response) => res.json());
+  }
+
+  async post({ uri, body }: { uri: string; body: BodyInit }) {
+    const url = new URL(uri, this.baseUrl);
+    return fetch(url, {
+      method: "POST",
+      body,
+      headers: {
+        "Content-Type": "application/json",
+        ...this.options,
+      },
+      signal: AbortSignal.timeout(this.timeout),
+      }).then(async (res: Response) => { 
+        if(res.status > 204) {
+          var message = await res.json();
+          if(!message.result)
+            throw message.error;
+        }
+	return res.json() });
   }
 
   /**
